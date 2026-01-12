@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Cognitive Division: AI for OD Professionals</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&display=swap');
+
+        :root {
+            --color-bg: #fafaf9; /* Stone 50 */
+            --color-text: #292524; /* Stone 800 */
+            --color-accent: #d97706; /* Amber 600 */
+            --color-secondary: #475569; /* Slate 600 */
+            --color-card: #ffffff;
+        }
+
+        body {
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, .serif {
+            font-family: 'Merriweather', serif;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Custom Neural Org Chart Styling */
+        .org-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            position: relative;
+            padding: 2rem;
+            background: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            min-height: 300px;
+        }
+
+        .org-layer {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            height: 100%;
+        }
+
+        .org-node {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background-color: #e5e7eb;
+            border: 2px solid #9ca3af;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #4b5563;
+            transition: all 0.5s ease;
+            z-index: 10;
+        }
+
+        .org-node.active {
+            background-color: #d97706;
+            color: white;
+            border-color: #b45309;
+            box-shadow: 0 0 15px rgba(217, 119, 6, 0.5);
+        }
+
+        /* Simplified connection lines representation */
+        .connection-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .connector {
+            position: absolute;
+            background-color: #e5e7eb;
+            transform-origin: 0 50%;
+            transition: background-color 0.5s, height 0.5s;
+        }
+
+        .tab-btn.active {
+            border-bottom: 2px solid var(--color-accent);
+            color: var(--color-accent);
+            font-weight: 600;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    <!-- Chosen Palette: Warm Professional - Stone background for calm, Amber accent for energy/human element, Slate for structure. -->
+    <!-- Application Structure Plan: The app uses a linear "handbook" structure divided into 5 modules (Phases). Each module uses a split-screen approach: The Left Column presents the "Artistic Direction/Visual Metaphor" (simulated via DOM elements or Charts), and the Right Column provides the "OD Translation". Navigation is tab-based, allowing users to move through the "Lifecycle of the Cognitive Division" step-by-step. This structure mimics a training workshop. -->
+    <!-- Visualization & Content Choices: 
+         Phase 1: HTML/CSS Node Grid to simulate an Org Chart (Architecture). Goal: Show structure without knowledge.
+         Phase 2: Animation on the Node Grid. Goal: Show work flowing through.
+         Phase 3: Chart.js Bar Chart. Goal: Gap Analysis (Loss Function).
+         Phase 4: Chart.js Line Chart. Goal: Improvement over time (Gradient Descent/Change Mgmt).
+         Phase 5: Chart.js Doughnut Chart. Goal: Bias in Data (OD Risk).
+         Justification: These simple visuals strip away the math and focus on the inputs/outputs and trends, which is the language of OD. 
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">🧠</span>
+                <div>
+                    <h1 class="text-xl font-bold text-stone-800 tracking-tight">The Cognitive Division</h1>
+                    <p class="text-xs text-stone-500 uppercase tracking-wider">AI Concepts for OD Leaders</p>
+                </div>
+            </div>
+            <nav class="hidden md:flex space-x-8 text-sm">
+                <button onclick="navTo('intro')" class="hover:text-amber-600 transition-colors">Introduction</button>
+                <button onclick="navTo('phase1')" class="hover:text-amber-600 transition-colors">The Setup</button>
+                <button onclick="navTo('phase5')" class="hover:text-amber-600 transition-colors text-stone-400">Risks</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+
+        <!-- Navigation Tabs (Mobile & Desktop) -->
+        <div class="flex overflow-x-auto space-x-6 border-b border-stone-200 mb-8 pb-2 text-sm md:text-base sticky top-16 bg-stone-50 z-40" id="nav-tabs">
+            <button onclick="app.setPhase(0)" id="tab-0" class="tab-btn pb-2 whitespace-nowrap text-stone-600 active">Intro: The Initiative</button>
+            <button onclick="app.setPhase(1)" id="tab-1" class="tab-btn pb-2 whitespace-nowrap text-stone-600">Phase 1: Org Design</button>
+            <button onclick="app.setPhase(2)" id="tab-2" class="tab-btn pb-2 whitespace-nowrap text-stone-600">Phase 2: The Workflow</button>
+            <button onclick="app.setPhase(3)" id="tab-3" class="tab-btn pb-2 whitespace-nowrap text-stone-600">Phase 3: Gap Analysis</button>
+            <button onclick="app.setPhase(4)" id="tab-4" class="tab-btn pb-2 whitespace-nowrap text-stone-600">Phase 4: Realignment</button>
+            <button onclick="app.setPhase(5)" id="tab-5" class="tab-btn pb-2 whitespace-nowrap text-stone-600">Phase 5: Culture Risk</button>
+        </div>
+
+        <!-- Dynamic Content Area -->
+        <div id="content-area" class="fade-in">
+            <!-- Content injected by JS -->
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-stone-100 border-t border-stone-200 mt-12 py-8">
+        <div class="max-w-6xl mx-auto px-4 text-center text-stone-500 text-sm">
+            <p>&copy; 2024 Cognitive Division Consulting. Bringing Systems Thinking to Artificial Intelligence.</p>
+        </div>
+    </footer>
+
+    <!-- Templates/Data Structure -->
+    <script>
+        // State Management
+        const app = {
+            currentPhase: 0,
+            
+            // Phase Content Data
+            phases: [
+                {
+                    id: 'intro',
+                    title: "The Cognitive Division Initiative",
+                    visualTitle: "The Mandate",
+                    desc: "You have been tasked with building a new 'Cognitive Division' within the company. This division starts with zero knowledge but has the capacity to learn anything.",
+                    visual: `
+                        <div class="bg-white p-8 rounded-lg shadow-sm border border-stone-200 flex flex-col items-center justify-center text-center h-full min-h-[300px]">
+                            <div class="text-6xl mb-4">🏢</div>
+                            <h3 class="serif text-2xl text-stone-800 mb-2">Project: Tabula Rasa</h3>
+                            <p class="text-stone-600 max-w-md">
+                                We are building a system, not writing a rulebook. 
+                                Your job is to design the structure, feed it experience, and manage its performance until it aligns with company goals.
+                            </p>
+                            <button onclick="app.setPhase(1)" class="mt-6 px-6 py-2 bg-amber-600 text-white rounded-full hover:bg-amber-700 transition shadow-md font-medium">
+                                Begin Organizational Design
+                            </button>
+                        </div>
+                    `,
+                    science: `
+                        <h3 class="text-xl font-bold text-stone-800 mb-4">Translation: What is a Neural Network?</h3>
+                        <p class="mb-4 text-stone-700">
+                            In tech terms, we are building a <strong>Neural Network</strong>. 
+                        </p>
+                        <p class="mb-4 text-stone-700">
+                            Traditional software is like a micromanager's handbook: <em>"If X happens, do Y."</em> It's rigid and requires foreseeing every scenario.
+                        </p>
+                        <p class="mb-4 text-stone-700">
+                            AI is like an agile team. You define the roles (architecture) and the success metrics (loss function), but you don't tell them <em>how</em> to do the job. They learn the "how" by processing thousands of case studies (training data) and adjusting based on feedback.
+                        </p>
+                        <div class="bg-stone-100 p-4 rounded-md border-l-4 border-amber-500">
+                            <p class="text-sm italic text-stone-600">"We are not programming the machine. We are teaching it to program itself."</p>
+                        </div>
+                    `
+                },
+                {
+                    id: 'phase1',
+                    title: "Phase 1: The Setup (Organizational Design)",
+                    visualTitle: "The Org Chart & Onboarding",
+                    desc: "Before work begins, we must define the hierarchy and lines of communication. Initially, relationships are weak and undefined.",
+                    visualType: 'org-chart-static',
+                    science: `
+                        <h3 class="text-xl font-bold text-stone-800 mb-4">Concept: Architecture & Weights</h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <span class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-stone-200 rounded-full text-stone-600 font-bold mr-3">1</span>
+                                <div>
+                                    <strong class="block text-stone-800">Architecture (The Org Chart)</strong>
+                                    <span class="text-stone-600 text-sm">The arrangement of neurons (nodes) and layers. In OD, this is your structural design—who reports to whom and how information flows.</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-stone-200 rounded-full text-stone-600 font-bold mr-3">2</span>
+                                <div>
+                                    <strong class="block text-stone-800">Weights (Relationship Strength)</strong>
+                                    <span class="text-stone-600 text-sm">The lines connecting the nodes. Technically, these are numerical values. In OD, think of this as <strong>Trust & Influence</strong>. Initially, these are random—staff don't know who to trust or whose advice to weigh heavily.</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-stone-200 rounded-full text-stone-600 font-bold mr-3">3</span>
+                                <div>
+                                    <strong class="block text-stone-800">Training Data (Market Intel)</strong>
+                                    <span class="text-stone-600 text-sm">The raw material fed into the department. Historical records, customer logs, and market research that the team will use to learn patterns.</span>
+                                </div>
+                            </li>
+                        </ul>
+                    `
+                },
+                {
+                    id: 'phase2',
+                    title: "Phase 2: The Action (Process Flow)",
+                    visualTitle: "The Forward Pass",
+                    desc: "A piece of work enters the division. It flows from junior analysts (input) through middle management (hidden layers) to leadership (output).",
+                    visualType: 'org-chart-dynamic',
+                    science: `
+                        <h3 class="text-xl font-bold text-stone-800 mb-4">Concept: The Forward Pass</h3>
+                        <p class="mb-4 text-stone-700">
+                            In AI, this is when data moves from the Input Layer to the Output Layer.
+                        </p>
+                        <h4 class="font-bold text-stone-800 text-sm uppercase tracking-wide mb-2">The OD Metaphor</h4>
+                        <p class="mb-4 text-stone-700">
+                            Imagine a case file arriving at the front desk. 
+                        </p>
+                        <ul class="list-disc pl-5 space-y-2 text-stone-700 mb-4">
+                            <li><strong>Step 1:</strong> Junior analysts read it and pass their quick takes to Middle Management.</li>
+                            <li><strong>Step 2:</strong> Middle Managers synthesize these takes. Because the team is new (random weights), Manager A might irrationally trust Analyst B over Analyst C.</li>
+                            <li><strong>Step 3:</strong> The Director receives the synthesis and makes a final decision.</li>
+                        </ul>
+                        <div class="bg-amber-50 p-4 rounded text-sm text-amber-800">
+                            <strong>Crucial Point:</strong> In the beginning, the decision is almost always <em>wrong</em>. The team hasn't learned the nuances yet.
+                        </div>
+                    `
+                },
+                {
+                    id: 'phase3',
+                    title: "Phase 3: The Feedback Loop",
+                    visualTitle: "Performance Gap Analysis",
+                    desc: "We compare the division's decision against what *should* have happened. The difference is our 'Loss'.",
+                    visualType: 'chart-loss',
+                    science: `
+                        <h3 class="text-xl font-bold text-stone-800 mb-4">Concept: Loss Function & The Gradient</h3>
+                        <div class="space-y-6">
+                            <div>
+                                <strong class="text-lg text-stone-800">The Loss Function (Gap Analysis)</strong>
+                                <p class="text-stone-600 mt-1">
+                                    Mathematically, this calculates the error. In OD, this is the <strong>KPI Dashboard</strong>. 
+                                    Did the division predict sales would be $1M, but they were $500k? The "Loss" is that $500k gap. We want this number to be zero.
+                                </p>
+                            </div>
+                            <div>
+                                <strong class="text-lg text-stone-800">The Gradient (360° Feedback)</strong>
+                                <p class="text-stone-600 mt-1">
+                                    Knowing you failed isn't enough; you need to know <em>why</em>. The Gradient is a mathematically precise <strong>360-degree review</strong>. 
+                                    It traces the error backwards through the org chart. It says: <em>"We failed because Manager A put too much weight on Analyst B's bad advice."</em>
+                                </p>
+                            </div>
+                        </div>
+                    `
+                },
+                {
+                    id: 'phase4',
+                    title: "Phase 4: Adaptation (Change Mgmt)",
+                    visualTitle: "The Realignment Initiative",
+                    desc: "Based on the feedback, we adjust the relationships. We strengthen connections that led to success and weaken those that led to failure.",
+                    visualType: 'chart-gradient',
+                    science: `
+                        <h3 class="text-xl font-bold text-stone-800 mb-4">Concept: Gradient Descent</h3>
+                        <p class="mb-4 text-stone-700">
+                            This is the "learning" in Machine Learning. 
+                        </p>
+                        <h4 class="font-bold text-stone-800 text-sm uppercase tracking-wide mb-2">The OD Metaphor</h4>
+                        <p class="mb-4 text-stone-700">
+                            Think of <strong>Backpropagation</strong> (the math technique) as an instant, organization-wide <strong>Realignment Meeting</strong>.
+                        </p>
+                        <p class="mb-4 text-stone-700">
+                            Every employee adjusts their working style slightly. 
+                            <em>"Okay, next time, I will listen less to Dave and more to Sarah regarding finance."</em>
+                        </p>
+                        <p class="text-stone-700">
+                            We repeat this cycle (Forward Pass -> Feedback -> Realignment) thousands of times (Epochs). Slowly, the "Organizational Chaos" turns into a highly tuned machine.
+                        </p>
+                    `
+                },
+                {
+                    id: 'phase5',
+                    title: "Phase 5: Critical OD Risks",
+                    visualTitle: "The Bias Trap",
+                    desc: "If your training data (history) contains systemic bias, your new efficient division will operationalize that bias at scale.",
+                    visualType: 'chart-bias',
+                    science: `
+                        <h3 class="text-xl font-bold text-stone-800 mb-4">Concept: Algorithmic Bias</h3>
+                        <p class="mb-4 text-stone-700">
+                            An AI model is a mirror of the data it was fed.
+                        </p>
+                        <h4 class="font-bold text-stone-800 text-sm uppercase tracking-wide mb-2">The OD Metaphor</h4>
+                        <p class="mb-4 text-stone-700">
+                            Imagine onboarding a new manager and giving them <em>only</em> case studies from the 1980s to learn from. 
+                            They will learn perfectly... to act like a manager from the 1980s.
+                        </p>
+                        <p class="mb-4 text-stone-700">
+                            If your company's historical hiring data (Training Data) shows a preference for a specific demographic, the AI (The Cognitive Division) will identify that as a "success factor" and optimize for it.
+                        </p>
+                        <div class="bg-red-50 p-4 rounded border-l-4 border-red-500 text-stone-800 text-sm">
+                            <strong>The Warning:</strong> You cannot fix culture just by building a new structure. You must curate the history you teach it.
+                        </div>
+                    `
+                }
+            ],
+
+            setPhase: function(index) {
+                this.currentPhase = index;
+                
+                // Update Tabs
+                document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+                    if(i === index) {
+                        btn.classList.add('active', 'border-b-2', 'border-amber-600', 'text-amber-600', 'font-semibold');
+                        btn.classList.remove('text-stone-600');
+                    } else {
+                        btn.classList.remove('active', 'border-b-2', 'border-amber-600', 'text-amber-600', 'font-semibold');
+                        btn.classList.add('text-stone-600');
+                    }
+                });
+
+                // Render Content
+                const data = this.phases[index];
+                const contentArea = document.getElementById('content-area');
+                
+                // Clear and Rebuild
+                contentArea.innerHTML = '';
+                
+                // Create Layout
+                const container = document.createElement('div');
+                container.className = 'grid grid-cols-1 lg:grid-cols-2 gap-8';
+
+                // Left Column (Visual)
+                const leftCol = document.createElement('div');
+                leftCol.className = 'flex flex-col';
+                
+                // Visual Header
+                const visHeader = document.createElement('div');
+                visHeader.innerHTML = `
+                    <div class="mb-4">
+                        <h2 class="text-2xl font-bold text-stone-900 serif">${data.title}</h2>
+                        <p class="text-stone-500 italic mt-1">${data.desc}</p>
+                    </div>
+                `;
+                leftCol.appendChild(visHeader);
+
+                // Visual Container
+                const visContainer = document.createElement('div');
+                visContainer.className = 'bg-white rounded-xl shadow-sm border border-stone-200 p-6 flex-grow flex flex-col items-center justify-center min-h-[400px] relative overflow-hidden';
+                
+                // Inject Specific Visual Logic
+                if (data.visual) {
+                    visContainer.innerHTML = data.visual;
+                } else if (data.visualType === 'org-chart-static') {
+                    this.renderOrgChart(visContainer, false);
+                } else if (data.visualType === 'org-chart-dynamic') {
+                    this.renderOrgChart(visContainer, true);
+                } else if (data.visualType === 'chart-loss') {
+                    this.renderLossChart(visContainer);
+                } else if (data.visualType === 'chart-gradient') {
+                    this.renderGradientChart(visContainer);
+                } else if (data.visualType === 'chart-bias') {
+                    this.renderBiasChart(visContainer);
+                }
+
+                leftCol.appendChild(visContainer);
+
+                // Right Column (Science/OD)
+                const rightCol = document.createElement('div');
+                rightCol.className = 'bg-white rounded-xl shadow-sm border border-stone-200 p-8 flex flex-col justify-center';
+                rightCol.innerHTML = data.science;
+
+                container.appendChild(leftCol);
+                container.appendChild(rightCol);
+                contentArea.appendChild(container);
+            },
+
+            // --- Visualization Rendering Logic ---
+
+            renderOrgChart: function(container, isDynamic) {
+                // Intro HTML
+                const controls = document.createElement('div');
+                controls.className = "w-full mb-4 flex justify-between items-center";
+                controls.innerHTML = `
+                    <h4 class="font-bold text-stone-700 text-sm uppercase">Visual Metaphor: The Network</h4>
+                    ${isDynamic ? '<button id="flow-btn" class="bg-amber-600 hover:bg-amber-700 text-white text-xs px-3 py-1 rounded transition">▶ Run Case Study</button>' : '<button id="randomize-btn" class="bg-stone-200 hover:bg-stone-300 text-stone-700 text-xs px-3 py-1 rounded transition">Randomize Trust Levels</button>'}
+                `;
+                container.appendChild(controls);
+
+                // The Grid Wrapper
+                const grid = document.createElement('div');
+                grid.className = 'org-grid w-full h-full relative';
+                
+                // SVG Layer for connections (simulated with absolute divs for simplicity/no-svg rule, 
+                // but actually, drawing simple lines with CSS transform is cleaner for "No SVG" adherence than using an SVG tag.
+                // However, creating a true network without SVG is tough. 
+                // Strategy: Use a canvas overlay for lines, HTML for nodes.)
+                
+                const canvas = document.createElement('canvas');
+                canvas.style.position = 'absolute';
+                canvas.style.top = '0';
+                canvas.style.left = '0';
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
+                canvas.style.pointerEvents = 'none';
+                grid.appendChild(canvas);
+
+                // Nodes
+                const layers = [
+                    { name: 'Input', count: 3, label: 'Analyst' },
+                    { name: 'Hidden', count: 4, label: 'Manager' },
+                    { name: 'Output', count: 2, label: 'Director' }
+                ];
+
+                const nodeElements = []; // Store for animating
+
+                layers.forEach((layer, layerIndex) => {
+                    const col = document.createElement('div');
+                    col.className = 'org-layer';
+                    
+                    for(let i=0; i<layer.count; i++) {
+                        const node = document.createElement('div');
+                        node.className = 'org-node shadow-sm bg-stone-100';
+                        node.innerText = layer.label[0] + (i+1);
+                        node.title = `${layer.label} ${i+1}`;
+                        node.dataset.layer = layerIndex;
+                        node.dataset.index = i;
+                        col.appendChild(node);
+                        nodeElements.push(node);
+                    }
+                    grid.appendChild(col);
+                });
+
+                container.appendChild(grid);
+
+                // Logic to draw lines on Canvas
+                setTimeout(() => {
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = grid.clientWidth;
+                    canvas.height = grid.clientHeight;
+                    
+                    const drawConnections = (highlight = false) => {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        
+                        // Get positions
+                        const inputNodes = Array.from(grid.children[1].children); // children[0] is canvas
+                        const hiddenNodes = Array.from(grid.children[2].children);
+                        const outputNodes = Array.from(grid.children[3].children);
+
+                        const drawLayer = (fromNodes, toNodes) => {
+                            fromNodes.forEach(from => {
+                                const fRect = from.getBoundingClientRect();
+                                const pRect = grid.getBoundingClientRect();
+                                const fx = fRect.left - pRect.left + fRect.width/2;
+                                const fy = fRect.top - pRect.top + fRect.height/2;
+
+                                toNodes.forEach(to => {
+                                    const tRect = to.getBoundingClientRect();
+                                    const tx = tRect.left - pRect.left + tRect.width/2;
+                                    const ty = tRect.top - pRect.top + tRect.height/2;
+
+                                    ctx.beginPath();
+                                    ctx.moveTo(fx, fy);
+                                    ctx.lineTo(tx, ty);
+                                    
+                                    // Style
+                                    if(highlight) {
+                                        ctx.strokeStyle = '#fbbf24'; // amber-400
+                                        ctx.lineWidth = 2;
+                                        ctx.globalAlpha = 1;
+                                    } else {
+                                        ctx.strokeStyle = '#d1d5db'; // gray-300
+                                        ctx.lineWidth = Math.random() * 3 + 0.5; // Random weights
+                                        ctx.globalAlpha = 0.5;
+                                    }
+                                    ctx.stroke();
+                                });
+                            });
+                        };
+
+                        drawLayer(inputNodes, hiddenNodes);
+                        drawLayer(hiddenNodes, outputNodes);
+                    };
+
+                    drawConnections();
+
+                    // Button Listeners
+                    if(isDynamic) {
+                        const btn = document.getElementById('flow-btn');
+                        btn.onclick = () => {
+                            // Reset
+                            nodeElements.forEach(n => n.classList.remove('active'));
+                            drawConnections(false);
+
+                            // Animate Sequence
+                            let step = 0;
+                            const interval = setInterval(() => {
+                                if(step === 0) {
+                                    // Input Active
+                                    nodeElements.filter(n => n.dataset.layer === '0').forEach(n => n.classList.add('active'));
+                                } else if (step === 1) {
+                                    // Connection Flow (Simulated by coloring lines)
+                                    // In a real app we'd animate the canvas lines. Simplified here by jumping to next nodes.
+                                    nodeElements.filter(n => n.dataset.layer === '0').forEach(n => n.classList.remove('active'));
+                                    nodeElements.filter(n => n.dataset.layer === '1').forEach(n => n.classList.add('active'));
+                                } else if (step === 2) {
+                                    nodeElements.filter(n => n.dataset.layer === '1').forEach(n => n.classList.remove('active'));
+                                    nodeElements.filter(n => n.dataset.layer === '2').forEach(n => n.classList.add('active'));
+                                } else {
+                                    clearInterval(interval);
+                                    setTimeout(() => {
+                                        nodeElements.filter(n => n.dataset.layer === '2').forEach(n => n.classList.remove('active'));
+                                        // Show Result Toast
+                                        const toast = document.createElement('div');
+                                        toast.className = 'absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-stone-800 text-white px-4 py-2 rounded text-sm';
+                                        toast.innerText = "Decision Output: " + (Math.random() > 0.5 ? "APPROVED" : "REJECTED");
+                                        container.appendChild(toast);
+                                        setTimeout(() => toast.remove(), 2000);
+                                    }, 500);
+                                }
+                                step++;
+                            }, 800);
+                        };
+                    } else {
+                        const btn = document.getElementById('randomize-btn');
+                        btn.onclick = () => drawConnections(false);
+                    }
+
+                    // Handle Resize
+                    window.addEventListener('resize', () => {
+                        canvas.width = grid.clientWidth;
+                        canvas.height = grid.clientHeight;
+                        drawConnections();
+                    });
+
+                }, 100);
+            },
+
+            renderLossChart: function(container) {
+                container.innerHTML = `
+                    <div class="w-full h-full flex flex-col items-center">
+                        <div class="w-full flex justify-between items-end mb-2 px-4">
+                             <h4 class="font-bold text-stone-700 text-sm">Gap Analysis Dashboard</h4>
+                        </div>
+                        <div class="chart-container relative w-full flex-grow">
+                            <canvas id="lossChart"></canvas>
+                        </div>
+                        <div class="w-full px-8 py-4 bg-stone-50 border-t border-stone-100">
+                             <label class="text-xs font-bold text-stone-500 uppercase">Adjust Target KPI (Expectation)</label>
+                             <input type="range" id="targetSlider" min="50" max="100" value="90" class="w-full h-2 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-amber-600">
+                             <div class="flex justify-between text-xs text-stone-500 mt-1">
+                                <span>Lenient</span>
+                                <span>Strict</span>
+                             </div>
+                        </div>
+                    </div>
+                `;
+
+                setTimeout(() => {
+                    const ctx = document.getElementById('lossChart').getContext('2d');
+                    
+                    // Initial Data
+                    let target = 90;
+                    let actual = 45; // Starts low
+                    
+                    const chart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Performance Metric'],
+                            datasets: [
+                                {
+                                    label: 'Target (Ideal)',
+                                    data: [target],
+                                    backgroundColor: '#d97706', // Amber
+                                    barPercentage: 0.6
+                                },
+                                {
+                                    label: 'Actual (Current Output)',
+                                    data: [actual],
+                                    backgroundColor: '#78716c', // Stone 500
+                                    barPercentage: 0.6
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: { beginAtZero: true, max: 120 }
+                            },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        footer: (tooltipItems) => {
+                                            const t = tooltipItems[0].parsed.y;
+                                            // This assumes strictly 2 items, simplistic logic for demo
+                                            return ""; 
+                                        }
+                                    }
+                                },
+                                annotation: {
+                                    // Requires plugin, skipping for vanilla ChartJS, doing manual text update
+                                }
+                            }
+                        }
+                    });
+
+                    // Interactive Slider
+                    const slider = document.getElementById('targetSlider');
+                    slider.addEventListener('input', (e) => {
+                        target = parseInt(e.target.value);
+                        chart.data.datasets[0].data[0] = target;
+                        
+                        // Calculate Loss
+                        const loss = target - actual;
+                        
+                        chart.update();
+                    });
+
+                }, 50);
+            },
+
+            renderGradientChart: function(container) {
+                container.innerHTML = `
+                    <div class="w-full h-full flex flex-col items-center">
+                        <div class="w-full mb-2 px-4 text-center">
+                             <h4 class="font-bold text-stone-700 text-sm">Performance Improvement Over Time</h4>
+                             <p class="text-xs text-stone-500">Simulating "Epochs" (Training Cycles)</p>
+                        </div>
+                        <div class="chart-container relative w-full flex-grow">
+                            <canvas id="gradChart"></canvas>
+                        </div>
+                        <div class="mt-4">
+                            <button id="train-btn" class="bg-amber-600 text-white px-6 py-2 rounded-full hover:bg-amber-700 shadow transition flex items-center">
+                                <span>⚙️ Run Realignment Cycle</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                setTimeout(() => {
+                    const ctx = document.getElementById('gradChart').getContext('2d');
+                    
+                    const initialData = [100, 85, 70]; // Starting error curve
+                    const labels = ['Cycle 1', 'Cycle 2', 'Cycle 3'];
+
+                    const chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Organizational Error Rate (Loss)',
+                                data: initialData,
+                                borderColor: '#d97706',
+                                backgroundColor: 'rgba(217, 119, 6, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: { beginAtZero: true, title: { display: true, text: 'Error / Friction' } },
+                                x: { title: { display: true, text: 'Training Iterations' } }
+                            }
+                        }
+                    });
+
+                    let cycleCount = 3;
+                    document.getElementById('train-btn').addEventListener('click', () => {
+                        cycleCount++;
+                        // Simulate Gradient Descent: Error drops, but slows down (diminishing returns)
+                        const lastVal = chart.data.datasets[0].data[chart.data.datasets[0].data.length - 1];
+                        const newVal = Math.max(5, lastVal - (lastVal * 0.3)); 
+                        
+                        chart.data.labels.push(`Cycle ${cycleCount}`);
+                        chart.data.datasets[0].data.push(newVal);
+                        chart.update();
+                    });
+
+                }, 50);
+            },
+
+            renderBiasChart: function(container) {
+                container.innerHTML = `
+                    <div class="w-full h-full flex flex-col items-center">
+                        <div class="w-full mb-2 px-4 text-center">
+                             <h4 class="font-bold text-stone-700 text-sm">Historical Data Composition</h4>
+                             <p class="text-xs text-stone-500">The "Wisdom" fed to the model</p>
+                        </div>
+                        <div class="chart-container relative w-full flex-grow">
+                            <canvas id="biasChart"></canvas>
+                        </div>
+                        <div class="w-full flex justify-center mt-4 space-x-4">
+                             <button id="legacy-data-btn" class="text-xs px-3 py-1 bg-stone-200 rounded text-stone-600 font-bold border border-stone-300">Load Legacy Data</button>
+                             <button id="audited-data-btn" class="text-xs px-3 py-1 bg-white rounded text-stone-600 border border-stone-200 hover:border-amber-500 hover:text-amber-600 transition">Load Audited Data</button>
+                        </div>
+                        <div id="bias-msg" class="mt-2 text-xs text-red-500 font-semibold h-4">
+                            ⚠ Warning: High skew detected in training set.
+                        </div>
+                    </div>
+                `;
+
+                setTimeout(() => {
+                    const ctx = document.getElementById('biasChart').getContext('2d');
+                    
+                    const chart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Demographic A (Majority)', 'Demographic B', 'Demographic C'],
+                            datasets: [{
+                                data: [85, 10, 5],
+                                backgroundColor: [
+                                    '#78716c', // Stone 500
+                                    '#d97706', // Amber 600
+                                    '#f59e0b'  // Amber 500
+                                ],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'bottom' }
+                            }
+                        }
+                    });
+
+                    document.getElementById('legacy-data-btn').addEventListener('click', (e) => {
+                        chart.data.datasets[0].data = [85, 10, 5];
+                        chart.update();
+                        document.getElementById('bias-msg').innerText = "⚠ Warning: High skew detected in training set.";
+                        document.getElementById('bias-msg').className = "mt-2 text-xs text-red-500 font-semibold h-4";
+                        
+                        // Toggle styles
+                        e.target.className = "text-xs px-3 py-1 bg-stone-200 rounded text-stone-600 font-bold border border-stone-300";
+                        document.getElementById('audited-data-btn').className = "text-xs px-3 py-1 bg-white rounded text-stone-600 border border-stone-200 hover:border-amber-500 hover:text-amber-600 transition";
+                    });
+
+                    document.getElementById('audited-data-btn').addEventListener('click', (e) => {
+                        chart.data.datasets[0].data = [40, 35, 25];
+                        chart.update();
+                        document.getElementById('bias-msg').innerText = "✓ Data Balanced. Risk mitigated.";
+                        document.getElementById('bias-msg').className = "mt-2 text-xs text-green-600 font-semibold h-4";
+
+                        // Toggle styles
+                        e.target.className = "text-xs px-3 py-1 bg-green-50 rounded text-green-700 font-bold border border-green-200";
+                        document.getElementById('legacy-data-btn').className = "text-xs px-3 py-1 bg-white rounded text-stone-600 border border-stone-200 hover:border-amber-500 hover:text-amber-600 transition";
+                    });
+
+                }, 50);
+            }
+        };
+
+        // Navigation Helper
+        function navTo(phaseId) {
+            const index = app.phases.findIndex(p => p.id === phaseId);
+            if(index >= 0) app.setPhase(index);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            app.setPhase(0);
+        });
+
+    </script>
+</body>
+</html>
